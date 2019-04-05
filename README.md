@@ -1,0 +1,2 @@
+# scrapy_rabbitmq
+rabbitmq的scrapy分布式爬虫
