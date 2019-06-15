@@ -24,7 +24,7 @@ class RabbitMQMiddleware(object):
         return RabbitMQMiddleware(crawler.settings)
 
     def ensure_init(self, spider):
-        if  self.init:
+        if self.init:
             self.spider = spider
             self.scheduler = spider.crawler.engine.slot.scheduler
             self.stats = spider.crawler.stats
@@ -45,34 +45,42 @@ class RabbitMQMiddleware(object):
         return response
 
     def has_delivery_tag(self, request):
-        if  'delivery_tag' not in request.meta:
+        if 'delivery_tag' not in request.meta:
             logger.error('Request %(request)s does not have a deliver tag.' %
-                {'request': request})
+                         {'request': request})
             return False
         return True
 
     def process_picture(self, response):
-        logger.info('Picture (%(status)d): %(url)s',
-            {'url': response.url, 'status': response.status})
+        logger.info('Picture (%(status)d): %(url)s', {
+            'url': response.url,
+            'status': response.status
+        })
         self.inc_stat('picture')
 
     def requeue(self, response):
         self.scheduler.requeue_message(response.url)
-        logger.info('Requeued (%(status)d): %(url)s',
-            {'url': response.url, 'status': response.status})
+        logger.info('Requeued (%(status)d): %(url)s', {
+            'url': response.url,
+            'status': response.status
+        })
         self.inc_stat('requeued')
 
     def ack(self, request, response):
-        if  self.has_delivery_tag(request):
+        if self.has_delivery_tag(request):
             delivery_tag = request.meta.get('delivery_tag')
             self.scheduler.ack_message(delivery_tag)
-            logger.info('Acked (%(status)d): %(url)s' %
-                {'url': response.url, 'status': response.status})
+            logger.info('Acked (%(status)d): %(url)s' % {
+                'url': response.url,
+                'status': response.status
+            })
             self.inc_stat('acked')
 
     def inc_stat(self, stat):
-            self.stats.inc_value('scheduler/acking/%(stat)s/rabbitmq' % {'stat': stat},
+        self.stats.inc_value(
+            'scheduler/acking/%(stat)s/rabbitmq' % {'stat': stat},
             spider=self.spider)
+
 
 def is_a_picture(response):
     picture_exts = ['.png', '.jpg']

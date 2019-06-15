@@ -2,6 +2,7 @@
 
 import pika
 
+
 def get_channel(connection, queue_name):
     """ Init method to return a prepared channel for consuming
     """
@@ -10,6 +11,7 @@ def get_channel(connection, queue_name):
     channel.confirm_delivery()
 
     return channel
+
 
 def connect(connection_url):
     """ Create and return a fresh connection

@@ -2,6 +2,7 @@ import sys
 import time
 import signal
 import logging
+import pickle
 
 from scrapy.http import Request
 from scrapy.dupefilters import BaseDupeFilter
@@ -45,6 +46,7 @@ class Scheduler(IScheduler):
         if not settings.get(key):
             msg = 'Please set "{}" at settings.'.format(key)
             raise ValueError(msg)
+
 
 repo_url = 'https://github.com/aox-lei/scrapy_rabbitmq'
 
@@ -94,14 +96,13 @@ class RabbitMQScheduler(Scheduler):
 
         msg_count = len(self.queue)
         if msg_count:
-            logger.info('Resuming crawling ({} urls scheduled)'
-                        .format(msg_count))
+            logger.info(
+                'Resuming crawling ({} urls scheduled)'.format(msg_count))
         else:
-            logger.info('No items to crawl in {}'
-                        .format(self.queue.key))
+            logger.info('No items to crawl in {}'.format(self.queue.key))
 
     def _make_queue(self, key):
-        return RabbitMQQueue(self.connection_url, key)
+        return RabbitMQQueue(self.connection_url, key, spider=self.spider)
 
     def on_sigint(self, signal, frame):
         self.closing = True
@@ -116,11 +117,12 @@ class RabbitMQScheduler(Scheduler):
     def enqueue_request(self, request):
         """ Enqueues request to main queues back
         """
-        if self.queue:
-            if  self.stats:
-                self.stats.inc_value('scheduler/enqueued/rabbitmq',
-                        spider=self.spider)
-            self.queue.push(request.url)
+
+        if self.queue is not None:
+            if self.stats:
+                self.stats.inc_value(
+                    'scheduler/enqueued/rabbitmq', spider=self.spider)
+            self.queue.push(request)
         return True
 
     def next_request(self):
@@ -130,12 +132,13 @@ class RabbitMQScheduler(Scheduler):
             return
 
         mframe, hframe, body = self.queue.pop()
+
         if any([mframe, hframe, body]):
             self.waiting = False
-            
+
             if self.stats:
-                self.stats.inc_value('scheduler/dequeued/rabbitmq',
-                        spider=self.spider)
+                self.stats.inc_value(
+                    'scheduler/dequeued/rabbitmq', spider=self.spider)
 
             request = self.spider._make_request(mframe, hframe, body)
             request.meta['delivery_tag'] = mframe.delivery_tag
@@ -156,6 +159,7 @@ class RabbitMQScheduler(Scheduler):
 class SaaS(RabbitMQScheduler):
     """ Scheduler as a RabbitMQ service.
     """
+
     def __init__(self, connection_url, *args, **kwargs):
         super(SaaS, self).__init__(connection_url, *args, **kwargs)
 

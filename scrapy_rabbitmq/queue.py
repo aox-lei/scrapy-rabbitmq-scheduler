@@ -3,9 +3,10 @@ import sys
 import time
 import pika
 import logging
-
+from scrapy.utils.reqser import request_to_dict
 # module packages
 from . import connection
+from . import picklecompat
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class IQueue(object):
 class RabbitMQQueue(IQueue):
     """Per-spider FIFO queue"""
 
-    def __init__(self, connection_url, key, exchange=None):
+    def __init__(self, connection_url, key, exchange=None, spider=None):
         """Initialize per-spider RabbitMQ queue.
 
         Parameters:
@@ -47,6 +48,8 @@ class RabbitMQQueue(IQueue):
         self.key = key
         self.connection_url = connection_url
         self.server = None
+        self.serializer = picklecompat
+        self.spider = spider
         self.connect()
 
     def __len__(self):
@@ -56,20 +59,21 @@ class RabbitMQQueue(IQueue):
 
     def _try_operation(function):
         """Wrap unary method by reconnect procedure"""
+
         def wrapper(self, *args, **kwargs):
-            retries = 0
-            while retries < 10:
-                try:
-                    return function(self, *args, **kwargs)
-                except Exception as e:
-                    retries += 1
-                    msg = 'Function %s failed. Reconnecting... (%d times)' %\
-                            (str(function), retries)
-                    logger.info(msg)
-                    self.connect()
-                    time.sleep((retries-1)*5)
-            return None
+            try:
+                return function(self, *args, **kwargs)
+            except Exception as e:
+                msg = 'Function %s failed. ErrorMsg... (%s)' %\
+                        (str(function), e)
+                logger.info(msg)
+
         return wrapper
+
+    def _encode_request(self, request):
+        """Encode a request object"""
+        obj = request_to_dict(request, self.spider)
+        return self.serializer.dumps(obj)
 
     @_try_operation
     def pop(self, no_ack=False):
@@ -85,14 +89,14 @@ class RabbitMQQueue(IQueue):
     def push(self, body, headers=None):
         """Push a message"""
         properties = None
-        if  headers:
+        if headers:
             properties = pika.BasicProperties(headers=headers)
+
         self.channel.basic_publish(
             exchange='',
             routing_key=self.key,
-            body=body,
-            properties=properties
-        )
+            body=self._encode_request(body),
+            properties=properties)
 
     def connect(self):
         """Make a connection"""
@@ -105,11 +109,12 @@ class RabbitMQQueue(IQueue):
         self.channel = connection.get_channel(self.server, self.key)
 
     def close(self):
-	    """Close channel"""
-	    self.channel.close()
+        """Close channel"""
+        self.channel.close()
 
     def clear(self):
         """Clear queue/stack"""
         self.channel.queue_purge(self.key)
+
 
 __all__ = ['SpiderQueue']
