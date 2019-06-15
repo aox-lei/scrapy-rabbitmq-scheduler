@@ -6,20 +6,6 @@ rabbitmq的scrapy分布式爬虫
 
 修改支持pika1.0.0版本
 去除延迟10s执行限制
-## Installation
-
-Using pip, type in your command-line prompt
-
-```
-pip install scrapy-rabbitmq-link
-```
- 
-Or clone the repo and inside the scrapy-rabbitmq-link directory, type
-
-```
-python setup.py install
-```
-
 ## Usage
 
 ### Step 1: In your scrapy settings, add the following config values:
