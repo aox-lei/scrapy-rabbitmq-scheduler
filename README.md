@@ -1,11 +1,6 @@
 # scrapy_rabbitmq
-scrapy框架的RabbitMQ调度器
-rabbitmq的scrapy分布式爬虫
-
-修改自 [scrapy-rabbitmq-link](https://raw.githubusercontent.com/mbriliauskas/scrapy-rabbitmq-link)
-
-修改支持pika1.0.0版本
-去除延迟10s执行限制
+仿造scrapy-redis实现的scrapy的rabbitmq分布式爬虫
+- Python version:3.4+
 ## Usage
 
 ### Step 1: In your scrapy settings, add the following config values:
