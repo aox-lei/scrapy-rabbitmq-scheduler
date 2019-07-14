@@ -77,9 +77,9 @@ class RabbitMQMiddleware(object):
             self.inc_stat('acked')
 
     def inc_stat(self, stat):
-        self.stats.inc_value(
-            'scheduler/acking/%(stat)s/rabbitmq' % {'stat': stat},
-            spider=self.spider)
+        self.stats.inc_value('scheduler/acking/%(stat)s/rabbitmq' %
+                             {'stat': stat},
+                             spider=self.spider)
 
 
 def is_a_picture(response):

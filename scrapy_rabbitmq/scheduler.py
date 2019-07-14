@@ -5,7 +5,6 @@ import logging
 import pickle
 
 from scrapy.http import Request
-from scrapy.dupefilters import BaseDupeFilter
 from . import connection
 from .queue import RabbitMQQueue
 
@@ -120,8 +119,8 @@ class RabbitMQScheduler(Scheduler):
 
         if self.queue is not None:
             if self.stats:
-                self.stats.inc_value(
-                    'scheduler/enqueued/rabbitmq', spider=self.spider)
+                self.stats.inc_value('scheduler/enqueued/rabbitmq',
+                                     spider=self.spider)
             self.queue.push(request)
         return True
 
@@ -135,10 +134,9 @@ class RabbitMQScheduler(Scheduler):
 
         if any([mframe, hframe, body]):
             self.waiting = False
-
             if self.stats:
-                self.stats.inc_value(
-                    'scheduler/dequeued/rabbitmq', spider=self.spider)
+                self.stats.inc_value('scheduler/dequeued/rabbitmq',
+                                     spider=self.spider)
 
             request = self.spider._make_request(mframe, hframe, body)
             request.meta['delivery_tag'] = mframe.delivery_tag
@@ -149,7 +147,6 @@ class RabbitMQScheduler(Scheduler):
                 msg = 'Queue {} is empty. Waiting for messages...'
                 self.waiting = True
                 logger.info(msg.format(self.queue.key))
-            # time.sleep(10)
             return None
 
     def has_pending_requests(self):

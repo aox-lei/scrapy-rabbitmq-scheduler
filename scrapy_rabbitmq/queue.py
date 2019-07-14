@@ -92,11 +92,10 @@ class RabbitMQQueue(IQueue):
         if headers:
             properties = pika.BasicProperties(headers=headers)
 
-        self.channel.basic_publish(
-            exchange='',
-            routing_key=self.key,
-            body=self._encode_request(body),
-            properties=properties)
+        self.channel.basic_publish(exchange='',
+                                   routing_key=self.key,
+                                   body=self._encode_request(body),
+                                   properties=properties)
 
     def connect(self):
         """Make a connection"""
