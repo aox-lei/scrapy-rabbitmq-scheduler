@@ -77,3 +77,7 @@ urls.txt
 ```text
 http://www.baidu.com
 ```
+
+## TODO
+- [] 增加任务持久化配置
+- [] item队列增加判断数量上限
