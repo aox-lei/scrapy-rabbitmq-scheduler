@@ -12,6 +12,6 @@ setup(
         'pika',
         'Scrapy>=0.14'
     ],
-    packages=['scrapy-rabbitmq-scheduler'],
-    package_dir={'src'}
+    packages=['scrapy_rabbitmq_scheduler'],
+    package_dir={'':'src'}
 )
