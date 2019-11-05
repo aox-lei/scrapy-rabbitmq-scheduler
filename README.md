@@ -15,7 +15,7 @@ python setup.py install
 ### 第一步: 在你的项目中的settings.py中添加配置项
 ```
 # 指定项目的调度器
-SCHEDULER = "scrapy_rabbitmq_scheduler.scheduler.Scheduler"
+SCHEDULER = "scrapy_rabbitmq_scheduler.scheduler.Saas"
 
 # 指定rabbitmq的连接DSN
 RABBITMQ_CONNECTION_PARAMETERS = 'amqp://guest:guest@localhost:5672/'
