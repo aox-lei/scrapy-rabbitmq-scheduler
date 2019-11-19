@@ -46,7 +46,7 @@ class Scheduler(IScheduler):
             raise ValueError(msg)
 
 
-repo_url = 'https://github.com/aox-lei/scrapy_rabbitmq'
+repo_url = 'https://github.com/aox-lei/scrapy-rabbitmq-scheduler'
 
 
 class RabbitMQScheduler(Scheduler):

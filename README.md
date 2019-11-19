@@ -15,7 +15,7 @@ python setup.py install
 ### 第一步: 在你的项目中的settings.py中添加配置项
 ```
 # 指定项目的调度器
-SCHEDULER = "scrapy_rabbitmq_scheduler.scheduler.Saas"
+SCHEDULER = "scrapy_rabbitmq_scheduler.scheduler.SaaS"
 
 # 指定rabbitmq的连接DSN
 RABBITMQ_CONNECTION_PARAMETERS = 'amqp://guest:guest@localhost:5672/'
@@ -77,8 +77,13 @@ urls.txt
 ```text
 http://www.baidu.com
 ```
-
+## 高级特色
+### 1. 支持消息优先级
+1. 消息优先级的范围为0~255, 数字越大, 优先级越高
+```python
+yield scrapy.Request(url, priority=优先级)
+```
+则可以直接指定消息的优先级
 ## TODO
 - [ ] 支持延时请求
 - [ ] 增加任务持久化配置
-- [ ] item队列增加判断数量上限
