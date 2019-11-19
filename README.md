@@ -84,6 +84,18 @@ http://www.baidu.com
 yield scrapy.Request(url, priority=优先级)
 ```
 则可以直接指定消息的优先级
+
+### 2. 队列持久化
+```python
+# settings.py
+RABBITMQ_DURABLE = True # 是否持久化队列, True为持久化 False为非持久化, 默认True
+```
+
+### 3. 消息确认
+```python
+# settings.py
+RABBITMQ_CONFIRM_DELIVERY = True # 消息是否需要确认, True为需要, False为不需要, 默认是True
+```
 ## TODO
 - [ ] 支持延时请求
 - [ ] 增加任务持久化配置

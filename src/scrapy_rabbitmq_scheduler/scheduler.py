@@ -46,7 +46,7 @@ class Scheduler(IScheduler):
             raise ValueError(msg)
 
 
-repo_url = 'https://github.com/aox-lei/scrapy-rabbitmq-scheduler'
+repo_url = 'https://github.com/aox-lei/scrapy_rabbitmq'
 
 
 class RabbitMQScheduler(Scheduler):
@@ -127,8 +127,8 @@ class RabbitMQScheduler(Scheduler):
         """
         if self.closing:
             return
-
-        mframe, hframe, body = self.queue.pop()
+        no_ack = True if self.spider.settings.get('RABBITMQ_CONFIRM_DELIVERY', True) is False else False 
+        mframe, hframe, body = self.queue.pop(no_ack=no_ack)
 
         if any([mframe, hframe, body]):
             self.waiting = False
@@ -137,7 +137,9 @@ class RabbitMQScheduler(Scheduler):
                                      spider=self.spider)
 
             request = self.spider._make_request(mframe, hframe, body)
-            request.meta['delivery_tag'] = mframe.delivery_tag
+            if self.spider.settings.get('RABBITMQ_CONFIRM_DELIVERY', True):
+                request.meta['delivery_tag'] = mframe.delivery_tag
+    
             logger.info('Running request {}'.format(request.url))
             return request
         else:

@@ -10,7 +10,6 @@ class RabbitMQMiddleware(object):
     """ Middleware used to close message from current queue or
         send unsuccessful messages to be rescheduled.
     """
-
     def __init__(self, settings):
         self.requeue_list = settings.get('SCHEDULER_REQUEUE_ON_STATUS', [])
         self.init = True
@@ -45,6 +44,8 @@ class RabbitMQMiddleware(object):
         return response
 
     def has_delivery_tag(self, request):
+        if self.spider.settings.get('RABBITMQ_CONFIRM_DELIVERY', True) is not True:
+            return False
         if 'delivery_tag' not in request.meta:
             logger.error('Request %(request)s does not have a deliver tag.' %
                          {'request': request})

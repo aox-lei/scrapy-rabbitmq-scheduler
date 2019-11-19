@@ -104,7 +104,12 @@ class RabbitMQQueue(IQueue):
             except:
                 pass
         self.server = connection.connect(self.connection_url)
-        self.channel = connection.get_channel(self.server, self.key)
+        self.channel = connection.get_channel(
+            self.server,
+            self.key,
+            durable=self.spider.settings.get('RABBITMQ_DURABLE', True),
+            confirm_delivery=self.spider.settings.get(
+                'RABBITMQ_CONFIRM_DELIVERY', True))
 
     def close(self):
         """Close channel"""

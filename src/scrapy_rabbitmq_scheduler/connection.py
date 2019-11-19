@@ -2,14 +2,15 @@
 import pika
 
 
-def get_channel(connection, queue_name):
+def get_channel(connection, queue_name, durable=True, confirm_delivery=True):
     """ Init method to return a prepared channel for consuming
     """
     channel = connection.channel()
-    channel.queue_declare(queue=queue_name, durable=True, arguments={
+    channel.queue_declare(queue=queue_name, durable=durable, arguments={
         'x-max-priority':255
     })
-    channel.confirm_delivery()
+    if confirm_delivery:
+        channel.confirm_delivery()
 
     return channel
 
