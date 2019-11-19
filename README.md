@@ -98,4 +98,4 @@ RABBITMQ_CONFIRM_DELIVERY = True # 消息是否需要确认, True为需要, Fals
 ```
 ## TODO
 - [ ] 支持延时请求
-- [ ] 增加任务持久化配置
+- [x] 增加任务持久化配置
