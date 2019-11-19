@@ -85,7 +85,9 @@ class RabbitMQQueue(IQueue):
     @_try_operation
     def push(self, body, headers=None):
         """Push a message"""
+
         properties = pika.BasicProperties()
+        properties.priority = body.priority
         if headers:
             properties.headers = headers
 

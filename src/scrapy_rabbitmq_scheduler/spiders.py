@@ -10,5 +10,5 @@ class RabbitSpider(scrapy.Spider):
             request = request_from_dict(pickle.loads(body), self)
         except Exception as e:
             body = body.decode()
-            request = scrapy.Request(body, callback=self.parse)
+            request = scrapy.Request(body, callback=self.parse, dont_filter=True)
         return request
