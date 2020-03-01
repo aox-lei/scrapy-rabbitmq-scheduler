@@ -66,7 +66,7 @@ with open('urls.txt') as f:
         channel.basic_publish(exchange='',
                         routing_key=queue_key,
                         body=url,
-                        pika.BasicProperties(
+                        properties=pika.BasicProperties(
                             content_type='text/plain',
                             delivery_mode=2
                         ))
@@ -96,6 +96,36 @@ RABBITMQ_DURABLE = True # 是否持久化队列, True为持久化 False为非持
 # settings.py
 RABBITMQ_CONFIRM_DELIVERY = True # 消息是否需要确认, True为需要, False为不需要, 默认是True
 ```
+
+### 4. 增加消息延时
+scrapy-rabbitmq-scheduler的消息延时是使用`rabbitmq-delayed-message-exchange`插件实现的, 所以在使用之前需要先安装以及开启这个插件
+`rabbitmq-delayed-message-exchange`: https://github.com/rabbitmq/rabbitmq-delayed-message-exchange
+
+**在spider中开启延时队列**
+```python
+# -*- coding: utf-8 -*-
+import scrapy
+from scrapy_rabbitmq_scheduler.spiders import RabbitSpider
+from example.items import ArticleItem
+
+
+class CcidcomSpider(RabbitSpider):
+    ....
+    # 队列名称
+    queue_name = 'ccidcom'
+    # 是否是延迟队列
+    is_delay_queue = True
+    ...
+```
+`is_delay_queue`设置为True,则自动会开启延时
+
+**使用延时**
+```python
+response.follow(_link,
+                                  dont_filter=True,
+                                  callback=self.parse_list, meta={'_delay_time': 10000})
+```
+在meta中增加`_delay_time`, 指定延时毫秒数, 则自动生效
 ## TODO
-- [ ] 支持延时请求
+- [x] 支持延时请求
 - [x] 增加任务持久化配置
