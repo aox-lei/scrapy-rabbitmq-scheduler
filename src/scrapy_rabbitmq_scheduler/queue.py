@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 class IQueue(object):
     """Per-spider queue/stack base class"""
+
     def __init__(self):
         """Init method"""
         raise NotImplementedError
@@ -36,6 +37,7 @@ class IQueue(object):
 
 class RabbitMQQueue(IQueue):
     """Per-spider FIFO queue"""
+
     def __init__(self, connection_url, key, exchange=None, spider=None):
         """Initialize per-spider RabbitMQ queue.
 
@@ -57,12 +59,13 @@ class RabbitMQQueue(IQueue):
 
     def _try_operation(function):
         """Wrap unary method by reconnect procedure"""
+
         def wrapper(self, *args, **kwargs):
             try:
                 return function(self, *args, **kwargs)
             except Exception as e:
                 msg = 'Function %s failed. ErrorMsg... (%s)' %\
-                        (str(function), e)
+                    (str(function), e)
                 logger.info(msg)
 
         return wrapper
@@ -83,15 +86,17 @@ class RabbitMQQueue(IQueue):
         self.channel.basic_ack(delivery_tag=delivery_tag)
 
     @_try_operation
-    def push(self, body, headers=None):
+    def push(self, body, headers={}):
         """Push a message"""
-
         properties = pika.BasicProperties()
         properties.priority = body.priority
-        if headers:
-            properties.headers = headers
 
-        self.channel.basic_publish(exchange='',
+        # 处理延时消息
+        if '_delay_time' in body.meta:
+            headers['x-delay'] = body.meta.get('_delay_time')
+        properties.headers = headers
+
+        self.channel.basic_publish(exchange='{}-delay'.format(self.key),
                                    routing_key=self.key,
                                    body=self._encode_request(body),
                                    properties=properties)
@@ -103,13 +108,15 @@ class RabbitMQQueue(IQueue):
                 self.server.close()
             except:
                 pass
+
         self.server = connection.connect(self.connection_url)
         self.channel = connection.get_channel(
             self.server,
             self.key,
             durable=self.spider.settings.get('RABBITMQ_DURABLE', True),
             confirm_delivery=self.spider.settings.get(
-                'RABBITMQ_CONFIRM_DELIVERY', True))
+                'RABBITMQ_CONFIRM_DELIVERY', True),
+            is_delay=self.spider.is_delay_queue)
 
     def close(self):
         """Close channel"""

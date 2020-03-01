@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 class IScheduler(object):
     """ Base Scrapy scheduler class. """
+
     def __init__(self):
         raise NotImplementedError
 
@@ -38,7 +39,7 @@ class IScheduler(object):
 
 
 class Scheduler(IScheduler):
-    #TODO: to be extended in future
+    # TODO: to be extended in future
     @staticmethod
     def _ensure_settings(settings, key):
         if not settings.get(key):
@@ -58,8 +59,6 @@ class RabbitMQScheduler(Scheduler):
         self.connection_url = connection_url
         self.waiting = False
         self.closing = False
-        persist = True
-        idle_before_close = 0
 
     @classmethod
     def from_settings(cls, settings):
@@ -91,7 +90,6 @@ class RabbitMQScheduler(Scheduler):
 
         self.spider = spider
         self.queue = self._make_queue(spider.queue_name)
-
         msg_count = len(self.queue)
         if msg_count:
             logger.info(
@@ -127,7 +125,8 @@ class RabbitMQScheduler(Scheduler):
         """
         if self.closing:
             return
-        no_ack = True if self.spider.settings.get('RABBITMQ_CONFIRM_DELIVERY', True) is False else False 
+        no_ack = True if self.spider.settings.get(
+            'RABBITMQ_CONFIRM_DELIVERY', True) is False else False
         mframe, hframe, body = self.queue.pop(no_ack=no_ack)
 
         if any([mframe, hframe, body]):
@@ -139,7 +138,7 @@ class RabbitMQScheduler(Scheduler):
             request = self.spider._make_request(mframe, hframe, body)
             if self.spider.settings.get('RABBITMQ_CONFIRM_DELIVERY', True):
                 request.meta['delivery_tag'] = mframe.delivery_tag
-    
+
             logger.info('Running request {}'.format(request.url))
             return request
         else:
@@ -156,6 +155,7 @@ class RabbitMQScheduler(Scheduler):
 class SaaS(RabbitMQScheduler):
     """ Scheduler as a RabbitMQ service.
     """
+
     def __init__(self, connection_url, *args, **kwargs):
         super(SaaS, self).__init__(connection_url, *args, **kwargs)
 

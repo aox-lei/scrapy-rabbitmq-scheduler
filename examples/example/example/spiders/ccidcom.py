@@ -10,6 +10,8 @@ class CcidcomSpider(RabbitSpider):
     start_urls = ['http://www.ccidcom.com/']
     # 队列名称
     queue_name = 'ccidcom'
+    # 是否是延迟队列
+    is_delay_queue = True
     # item队列名称
     items_key = 'item_ccidcom'
 
@@ -19,7 +21,7 @@ class CcidcomSpider(RabbitSpider):
         for _link in navigation_list:
             yield response.follow(_link,
                                   dont_filter=True,
-                                  callback=self.parse_list)
+                                  callback=self.parse_list, meta={'_delay_time': 10000})
 
     def parse_list(self, response):
         article_list = response.css('div.article-item')
