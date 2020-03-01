@@ -121,9 +121,7 @@ class CcidcomSpider(RabbitSpider):
 
 **使用延时**
 ```python
-response.follow(_link,
-                                  dont_filter=True,
-                                  callback=self.parse_list, meta={'_delay_time': 10000})
+yield scrapy.Request('http://www.ccidcom.com/', callback=self.parse, meta={'_delay_time': 10000})
 ```
 在meta中增加`_delay_time`, 指定延时毫秒数, 则自动生效
 ## TODO
