@@ -94,9 +94,14 @@ class RabbitMQQueue(IQueue):
         # 处理延时消息
         if '_delay_time' in body.meta:
             headers['x-delay'] = body.meta.get('_delay_time')
+
+        if 'is_delay_queue' in self.spider and self.spider.is_delay_queue is True:
+            exchange = '{}-delay'.format(self.key)
+        else:
+            exchange = ''
         properties.headers = headers
 
-        self.channel.basic_publish(exchange='{}-delay'.format(self.key),
+        self.channel.basic_publish(exchange=exchange,
                                    routing_key=self.key,
                                    body=self._encode_request(body),
                                    properties=properties)
@@ -110,13 +115,17 @@ class RabbitMQQueue(IQueue):
                 pass
 
         self.server = connection.connect(self.connection_url)
+        if 'is_delay_queue' in self.spider:
+            is_delay = self.spider.is_delay_queue
+        else:
+            is_delay = False
         self.channel = connection.get_channel(
             self.server,
             self.key,
             durable=self.spider.settings.get('RABBITMQ_DURABLE', True),
             confirm_delivery=self.spider.settings.get(
                 'RABBITMQ_CONFIRM_DELIVERY', True),
-            is_delay=self.spider.is_delay_queue)
+            is_delay=is_delay)
 
     def close(self):
         """Close channel"""
