@@ -95,7 +95,7 @@ class RabbitMQQueue(IQueue):
         if '_delay_time' in body.meta:
             headers['x-delay'] = body.meta.get('_delay_time')
 
-        if 'is_delay_queue' in self.spider and self.spider.is_delay_queue is True:
+        if hasattr(self.spider, 'is_delay_queue') and self.spider.is_delay_queue is True:
             exchange = '{}-delay'.format(self.key)
         else:
             exchange = ''
@@ -115,10 +115,11 @@ class RabbitMQQueue(IQueue):
                 pass
 
         self.server = connection.connect(self.connection_url)
-        if 'is_delay_queue' in self.spider:
+
+        is_delay = False
+        if hasattr(self.spider, 'is_delay_queue'):
             is_delay = self.spider.is_delay_queue
-        else:
-            is_delay = False
+
         self.channel = connection.get_channel(
             self.server,
             self.key,
