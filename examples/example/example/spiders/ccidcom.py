@@ -15,7 +15,7 @@ class CcidcomSpider(RabbitSpider):
     items_key = 'item_ccidcom'
 
     def start_requests(self):
-        yield scrapy.Request('http://www.ccidcom.com/', callback=self.parse, meta={'_delay_time': 10000})
+        yield scrapy.Request('http://www.ccidcom.com/', callback=self.parse, meta={'_delay_time': 0})
 
     def parse(self, response):
         navigation_list = response.css(
@@ -23,7 +23,7 @@ class CcidcomSpider(RabbitSpider):
         for _index, _link in enumerate(navigation_list):
             yield response.follow(_link,
                                   dont_filter=True,
-                                  callback=self.parse_list, meta={'_delay_time': 1000})
+                                  callback=self.parse_list, meta={'_delay_time': 0})
 
     def parse_list(self, response):
         article_list = response.css('div.article-item')
@@ -32,3 +32,5 @@ class CcidcomSpider(RabbitSpider):
             item['title'] = info.css('div.title a>font::text').get()
             item['url'] = info.css('div.title a::attr("href")').get()
             yield item
+
+        yield scrapy.Request('http://www.ccidcom.com/', callback=self.parse, meta={'_delay_time': 0})

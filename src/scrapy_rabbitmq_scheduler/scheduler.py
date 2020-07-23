@@ -107,6 +107,7 @@ class RabbitMQScheduler(Scheduler):
         try:
             logger.error('scheduler schchannel is closed!!!!!!!!!!!')
             self.queue.close()
+            self.queue = None
         except:
             pass
 
@@ -124,7 +125,9 @@ class RabbitMQScheduler(Scheduler):
         """ Creates and returns a request to fire
         """
         if self.closing:
+            self.close('user close')
             return
+
         no_ack = True if self.spider.settings.get(
             'RABBITMQ_CONFIRM_DELIVERY', True) is False else False
         mframe, hframe, body = self.queue.pop(no_ack=no_ack)
@@ -160,7 +163,9 @@ class SaaS(RabbitMQScheduler):
         super(SaaS, self).__init__(connection_url, *args, **kwargs)
 
     def ack_message(self, delivery_tag):
-        self.queue.ack(delivery_tag)
+        if self.queue:
+            self.queue.ack(delivery_tag)
 
     def requeue_message(self, body, headers=None):
-        self.queue.push(body, headers)
+        if self.queue:
+            self.queue.push(body, headers)

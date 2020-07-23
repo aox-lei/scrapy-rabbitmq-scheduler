@@ -77,13 +77,32 @@ class RabbitMQQueue(IQueue):
 
     @_try_operation
     def pop(self, no_ack=False):
-        """Pop a message"""
-        return self.channel.basic_get(queue=self.key, auto_ack=no_ack)
+        try_time = 1
+        while try_time <= 10:
+            """Pop a message"""
+            try:
+                return self.channel.basic_get(queue=self.key, auto_ack=no_ack)
+            except Exception as e:
+                try_time += 1
+                logger.exception(e)
+                logger.error(
+                    'pop a message failed, trying: {}...'.format(try_time))
+                self.connect()
 
     @_try_operation
     def ack(self, delivery_tag):
-        """Ack a message"""
-        self.channel.basic_ack(delivery_tag=delivery_tag)
+        try_time = 1
+        while try_time <= 3:
+            try:
+                """Ack a message"""
+                self.channel.basic_ack(delivery_tag=delivery_tag)
+                return 
+            except Exception as e:
+                try_time += 1
+                # logger.exception(e)
+                logger.error(
+                    'ask a message failed, trying: {}...'.format(try_time))
+                self.connect()
 
     @_try_operation
     def push(self, body, headers={}):
@@ -101,10 +120,21 @@ class RabbitMQQueue(IQueue):
             exchange = ''
         properties.headers = headers
 
-        self.channel.basic_publish(exchange=exchange,
-                                   routing_key=self.key,
-                                   body=self._encode_request(body),
-                                   properties=properties)
+        try_time = 1
+        while try_time <= 10:
+            try:
+                """Ack a message"""
+                self.channel.basic_publish(exchange=exchange,
+                                           routing_key=self.key,
+                                           body=self._encode_request(body),
+                                           properties=properties)
+                return
+            except Exception as e:
+                try_time += 1
+                logger.exception(e)
+                logger.error(
+                    'push a message failed, trying: {}...'.format(try_time))
+                self.connect()
 
     def connect(self):
         """Make a connection"""
