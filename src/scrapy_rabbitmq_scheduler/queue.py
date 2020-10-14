@@ -111,6 +111,8 @@ class RabbitMQQueue(IQueue):
         """Push a message"""
         properties = pika.BasicProperties()
         properties.priority = body.priority
+        if body.priority < 0 or body.priority > 255:
+            properties.priority = 0
 
         # 处理延时消息
         if '_delay_time' in body.meta:
