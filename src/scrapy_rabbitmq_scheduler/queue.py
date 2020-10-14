@@ -72,8 +72,6 @@ class RabbitMQQueue(IQueue):
 
     def _encode_request(self, request):
         """Encode a request object"""
-        if request.priority < 0 or request.priority > 255:
-            request.priority = 0
         obj = request_to_dict(request, self.spider)
         return self.serializer.dumps(obj)
 
