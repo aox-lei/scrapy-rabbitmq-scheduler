@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     # 以下为必需参数
     name='scrapy-rabbitmq-scheduler',  # 模块名
-    version='1.0.8',  # 当前版本
+    version='1.0.9',  # 当前版本
     description='Rabbitmq for Distributed scraping',  # 简短描述
     author='aox lei',
     author_email='2387813033@qq.com',
